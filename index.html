@@ -287,6 +287,87 @@
         opacity: 1;
       }
     }
+
+    /* Storyboard Styles */
+    .storyboard-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 15000;
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out;
+    }
+
+    .storyboard-overlay.show {
+      opacity: 1;
+    }
+
+    .storyboard-overlay.fade-out {
+      opacity: 0;
+    }
+
+    .storyboard-content {
+      text-align: center;
+      color: white;
+      max-width: 90%;
+      max-height: 90%;
+    }
+
+    .storyboard-image {
+      max-width: 100%;
+      max-height: 70vh;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      margin-bottom: 1rem;
+      object-fit: contain;
+    }
+
+    .storyboard-title {
+      font-size: 2.5rem;
+      color: #ffa726;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      margin-bottom: 0.5rem;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    .storyboard-subtitle {
+      font-size: 1.3rem;
+      color: #ffcc99;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      margin-bottom: 1rem;
+    }
+
+    .storyboard-timer {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      color: #ffcc99;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .storyboard-title {
+        font-size: 1.8rem;
+      }
+      
+      .storyboard-subtitle {
+        font-size: 1rem;
+      }
+      
+      .storyboard-image {
+        max-height: 60vh;
+      }
+    }
   </style>
 </head>
 <body>
@@ -300,7 +381,7 @@
         <option value="food">🍽️ Desi Food</option>
         <option value="festivals">🪔 Indian Festivals</option>
         <option value="bollywood">🎬 Bollywood</option>
-        <option value="culture">� Indian Culture</option>
+        <option value="culture">🕉️ Indian Culture</option>
         <option value="transport">🛺 Indian Transport</option>
         <option value="animals">🐘 Animals</option>
       </select>
@@ -339,15 +420,44 @@
   </div>
 </div>
 
+<div id="storyboard" class="storyboard-overlay">
+  <div class="storyboard-content">
+    <img id="storyboard-image" class="storyboard-image" src="" alt="Story Image">
+    <h2 id="storyboard-title" class="storyboard-title"></h2>
+    <p id="storyboard-subtitle" class="storyboard-subtitle"></p>
+    <div id="storyboard-timer" class="storyboard-timer">Starting in <span id="countdown">5</span> seconds...</div>
+  </div>
+</div>
+
 <script>
     const emojiDecks = {
       food: ['🍛', '🥘', '🍲', '🫓', '🍢', '🥟', '🍚', '🧁', '🥭', '🌶️', '🧄', '🥥', '🍯', '☕'],
-      festivals: ['🪔', '🎆', '�️', '🎨', '🌺', '🥥', '🎪', '🪘', '🎭', '🕉️', '🎊', '✨', '🌙', '⭐'],
+      festivals: ['🪔', '🎆', '🎇', '🎨', '🌺', '🥥', '🎪', '🪘', '🎭', '🕉️', '🎊', '✨', '🌙', '⭐'],
       bollywood: ['💃', '🕺', '🎬', '🎵', '👑', '💎', '🌟', '🎪', '🎭', '🎤', '🎸', '🥁', '🎺', '🎻'],
       culture: ['🕌', '🪔', '🕉️', '🦚', '🎉', '🐄', '🪘', '🎨', '🎊', '🕯️', '🎪', '🪕', '🧘', '🙏'],
-      transport: ['🛺', '🚂', '✈️', '🚗', '🛵', '🚲', '⛵', '�', '🏨', '�️', '🚁', '🚢', '🏍️', '🚕'],
+      transport: ['🛺', '🚂', '✈️', '🚗', '🛵', '🚲', '⛵', '🏨', '🏛️', '🚁', '🚢', '🏍️', '🚕'],
       animals: ['🐘', '🐅', '🐒', '🦚', '🐄', '🐍', '🐫', '🐃', '🐆', '🐊', '🦌', '🐕', '🐈', '🕊️']
     };
+
+    // Storyboard data for themes with images
+    const storyboards = {
+      festivals: {
+        image: 'indian festival.png',
+        title: '🪔 Festival of Lights',
+        subtitle: 'Experience the magic of Indian festivals! Match diyas, fireworks, and celebration symbols in this colorful memory challenge.'
+      },
+      food: {
+        image: 'food challenge.png',
+        title: '🍽️ Desi Food Adventure',
+        subtitle: 'Embark on a delicious journey through Indian cuisine! Match biryanis, curries, and traditional sweets.'
+      },
+      bollywood: {
+        image: 'bollywood.png',
+        title: '🎬 Bollywood Bonanza',
+        subtitle: 'Lights, camera, action! Dance through the glamorous world of Bollywood with music, dance, and drama.'
+      }
+    };
+
     const bonusTimeEmoji = '⌛';
 
     const setupEl = document.getElementById('setup');
@@ -368,6 +478,13 @@
     const modalTitleEl = document.getElementById('modal-title');
     const modalTextEl = document.getElementById('modal-text');
     const finalScoreEl = document.getElementById('finalScore');
+
+    // Storyboard elements
+    const storyboardEl = document.getElementById('storyboard');
+    const storyboardImageEl = document.getElementById('storyboard-image');
+    const storyboardTitleEl = document.getElementById('storyboard-title');
+    const storyboardSubtitleEl = document.getElementById('storyboard-subtitle');
+    const countdownEl = document.getElementById('countdown');
 
     let timer;
     let timeLeft = 60;
@@ -489,6 +606,43 @@
       setTimeout(() => celebration.remove(), 3000);
     }
 
+    // Storyboard functionality
+    function showStoryboard(theme) {
+      if (!storyboards[theme]) return false;
+      
+      const storyData = storyboards[theme];
+      storyboardImageEl.src = storyData.image;
+      storyboardTitleEl.textContent = storyData.title;
+      storyboardSubtitleEl.textContent = storyData.subtitle;
+      
+      storyboardEl.style.display = 'flex';
+      setTimeout(() => storyboardEl.classList.add('show'), 100);
+      
+      let countdown = 5;
+      countdownEl.textContent = countdown;
+      
+      const countdownTimer = setInterval(() => {
+        countdown--;
+        countdownEl.textContent = countdown;
+        
+        if (countdown <= 0) {
+          clearInterval(countdownTimer);
+          hideStoryboard();
+        }
+      }, 1000);
+      
+      return true;
+    }
+
+    function hideStoryboard() {
+      storyboardEl.classList.add('fade-out');
+      setTimeout(() => {
+        storyboardEl.style.display = 'none';
+        storyboardEl.classList.remove('show', 'fade-out');
+        actuallyStartGame();
+      }, 800);
+    }
+
     function getDifficultySettings(difficulty) {
       switch (difficulty) {
         case 'easy': return { pairs: 6, columns: 4, time: 90 };
@@ -595,11 +749,21 @@
 
     function startGame() {
       modalEl.style.display = 'none';
+      currentDifficulty = document.getElementById('difficulty').value;
+      currentTheme = document.getElementById('theme').value;
+      
+      // Show storyboard if available for this theme
+      if (showStoryboard(currentTheme)) {
+        return; // actuallyStartGame will be called after storyboard
+      }
+      
+      actuallyStartGame();
+    }
+
+    function actuallyStartGame() {
       setupEl.style.display = 'none';
       gameContainerEl.style.display = 'block';
 
-      currentDifficulty = document.getElementById('difficulty').value;
-      currentTheme = document.getElementById('theme').value;
       const settings = getDifficultySettings(currentDifficulty);
       numPairs = settings.pairs;
       timeLeft = settings.time;
@@ -702,7 +866,6 @@
         showModal('⏰ Time Up!', 'Better luck next time!', score);
     }
 
-
     function restartGame() {
         clearInterval(timer);
         gameContainerEl.style.display = 'none';
@@ -712,7 +875,6 @@
     function playAgain() {
         startGame();
     }
-
 
     startGameBtn.addEventListener('click', startGame);
     restartBtn.addEventListener('click', restartGame);
