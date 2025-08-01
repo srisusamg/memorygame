@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Desi Memory Challenge</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #ffe0b3, #ffcc99);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .container {
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 2.5rem;
+      color: #e65100;
+      text-shadow: 1px 1px #fff;
+    }
+    .board {
+      display: grid;
+      grid-gap: 10px;
+      margin: 1.5rem 0;
+    }
+    .card {
+      width: min(12vw, 80px);
+      height: min(12vw, 80px);
+      background-color: #fff3e0;
+      border: 2px solid #ffa726;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: min(4vw, 2rem);
+      transform-style: preserve-3d;
+      transition: transform 0.4s, background-color 0.4s, box-shadow 0.2s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .card:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .card .emoji {
+      transition: transform 0.4s;
+      transform: rotateY(180deg);
+      backface-visibility: hidden;
+    }
+    .card.flipped {
+      background-color: #fff8e1;
+      transform: rotateY(180deg);
+    }
+    .card.matched {
+      animation: pulse 0.6s;
+    }
+    .card.shake {
+      animation: shake 0.5s;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0) rotateY(180deg); }
+      25% { transform: translateX(-8px) rotateY(180deg); }
+      75% { transform: translateX(8px) rotateY(180deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: rotateY(180deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.1); }
+    }
+    .scoreboard {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      background-color: #ff7043;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff5722;
+    }
+    button:disabled {
+      background-color: #ffccbc;
+      cursor: not-allowed;
+    }
+    .setup-container {
+      background: #fff3e0;
+      padding: 2rem;
+      border-radius: 15px;
+      border: 2px solid #ffa726;
+    }
+    .setup-container h2 {
+      margin-top: 0;
+      color: #e65100;
+    }
+    .setup-container div {
+      margin: 1rem 0;
+    }
+    .setup-container label {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+    .setup-container select, .setup-container button {
+      font-size: 1.1rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: 1px solid #ffa726;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+    #startGameBtn {
+      background-color: #4caf50;
+      border-color: #4caf50;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, #ffe0b3, #ffcc99);
+      padding: 2rem;
+      border-radius: 15px;
+      text-align: center;
+      color: #333;
+      border: 3px solid #e65100;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .modal-content h2 {
+      color: #e65100;
+      margin-top: 0;
+    }
+    .modal-content p {
+      font-size: 1.2rem;
+    }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      .board {
+        grid-gap: 8px;
+        padding: 0 10px;
+      }
+      
+      .card {
+        font-size: min(4vw, 2rem);
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .scoreboard {
+        font-size: 0.9rem;
+        padding: 0.3rem 0.8rem;
+      }
+      
+      .controls {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      button {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+      }
+    }
+    
+    /* Celebration and Achievement Animations */
+    .celebration {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      animation: celebrate 3s ease-out forwards;
+      font-size: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      align-content: space-around;
+    }
+
+    @keyframes celebrate {
+      0% {
+        opacity: 1;
+        transform: translateY(100vh) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-100vh) rotate(360deg);
+      }
+    }
+    
+    .achievement-popup {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #ff9800, #ff5722);
+      color: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: slideIn 0.5s ease-out;
+      z-index: 10000;
+      max-width: 250px;
+    }
+
+    .achievement-content h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+    }
+
+    .achievement-content p {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .achievement-content span {
+      font-weight: bold;
+      color: #ffeb3b;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+  <div id="setup" class="setup-container">
+    <h2>Game Setup</h2>
+    <div>
+      <label for="theme">Theme:</label>
+      <select id="theme">
+        <option value="food">🍽️ Desi Food</option>
+        <option value="festivals">🪔 Indian Festivals</option>
+        <option value="bollywood">🎬 Bollywood</option>
+        <option value="culture">� Indian Culture</option>
+        <option value="transport">🛺 Indian Transport</option>
+        <option value="animals">🐘 Animals</option>
+      </select>
+    </div>
+    <div>
+      <label for="difficulty">Difficulty:</label>
+      <select id="difficulty">
+        <option value="easy">Easy (4x3)</option>
+        <option value="medium">Medium (4x4)</option>
+        <option value="hard">Hard (5x4)</option>
+      </select>
+    </div>
+    <button id="startGameBtn">Start Game</button>
+  </div>
+
+  <div id="game-container" style="display: none;">
+    <h1>Desi Memory Challenge</h1>
+    <div class="scoreboard">
+      ⏱️ Time: <span id="time">60</span>s | ✅ Score: <span id="score">0</span> | 🔥 Combo: <span id="combo">0</span><br/>
+      🏆 High Score: <span id="highScore">0</span>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="controls">
+      <button id="restartBtn">🔁 New Game</button>
+      <button id="peekBtn">🧐 Peek (1)</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal-overlay">
+  <div class="modal-content">
+    <h2 id="modal-title">🎉 Wah Wah!</h2>
+    <p id="modal-text">You matched them all!</p>
+    <p>Final Score: <strong id="finalScore">0</strong></p>
+    <button id="modalPlayAgainBtn">Play Again</button>
+  </div>
+</div>
+
+<script>
+    const emojiDecks = {
+      food: ['🍛', '🥘', '🍲', '🫓', '🍢', '🥟', '🍚', '🧁', '🥭', '🌶️', '🧄', '🥥', '🍯', '☕'],
+      festivals: ['🪔', '🎆', '�️', '🎨', '🌺', '🥥', '🎪', '🪘', '🎭', '🕉️', '🎊', '✨', '🌙', '⭐'],
+      bollywood: ['💃', '🕺', '🎬', '🎵', '👑', '💎', '🌟', '🎪', '🎭', '🎤', '🎸', '🥁', '🎺', '🎻'],
+      culture: ['🕌', '�', '�', '🦚', '�', '�🐄', '�', '🪘', '🎨', '�', '�', '🕯️', '🎪', '�'],
+      transport: ['🛺', '🚂', '✈️', '🚗', '🛵', '🚲', '⛵', '�', '🏨', '�️', '🚁', '🚢', '🏍️', '🚕'],
+      animals: ['🐘', '🐅', '🐒', '🦚', '🐄', '🐍', '🐫', '🐃', '🐆', '🐊', '🦌', '🐕', '🐈', '🕊️']
+    };
+    const bonusTimeEmoji = '⌛';
+
+    const setupEl = document.getElementById('setup');
+    const gameContainerEl = document.getElementById('game-container');
+    const boardEl = document.getElementById('board');
+    const timeEl = document.getElementById('time');
+    const scoreEl = document.getElementById('score');
+    const comboEl = document.getElementById('combo');
+    const highScoreEl = document.getElementById('highScore');
+    const h1El = document.querySelector('h1');
+
+    const peekBtn = document.getElementById('peekBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const startGameBtn = document.getElementById('startGameBtn');
+    const modalPlayAgainBtn = document.getElementById('modalPlayAgainBtn');
+
+    const modalEl = document.getElementById('modal');
+    const modalTitleEl = document.getElementById('modal-title');
+    const modalTextEl = document.getElementById('modal-text');
+    const finalScoreEl = document.getElementById('finalScore');
+
+    let timer;
+    let timeLeft = 60;
+    let flipped = [];
+    let matched = 0;
+    let score = 0;
+    let combo = 0;
+    let peekCount = 1;
+    let isPeeking = false;
+    let currentDifficulty, currentTheme, numPairs;
+    let highScores = JSON.parse(localStorage.getItem('memoryHighScores')) || {};
+    let wrongMatches = 0;
+
+    // Sound and haptic feedback functions
+    function vibrate(pattern = 10) {
+      if (navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
+    }
+
+    function playSound(type) {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const sounds = {
+          flip: { freq: 800, duration: 100 },
+          match: { freq: 1200, duration: 200 },
+          wrong: { freq: 300, duration: 300 },
+          win: { freq: 1500, duration: 500 }
+        };
+        
+        if (sounds[type]) {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.value = sounds[type].freq;
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + sounds[type].duration / 1000);
+          
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + sounds[type].duration / 1000);
+        }
+      } catch (e) {
+        // Audio context not supported, fail silently
+      }
+    }
+
+    // Achievement system
+    const achievements = {
+      speedster: { name: '⚡ Speed Demon', desc: 'Complete in under 30 seconds', points: 500 },
+      perfectionist: { name: '🎯 Perfect Match', desc: 'No wrong matches', points: 300 },
+      combo_king: { name: '🔥 Combo King', desc: 'Get 5+ combo streak', points: 200 },
+      desi_master: { name: '🏆 Desi Master', desc: 'Complete all themes', points: 1000 }
+    };
+
+    let playerStats = JSON.parse(localStorage.getItem('memoryStats')) || {
+      gamesPlayed: 0,
+      achievements: [],
+      themesCompleted: []
+    };
+
+    function showAchievement(achievement) {
+      const achievementEl = document.createElement('div');
+      achievementEl.className = 'achievement-popup';
+      achievementEl.innerHTML = `
+        <div class="achievement-content">
+          <h3>${achievement.name}</h3>
+          <p>${achievement.desc}</p>
+          <span>+${achievement.points} points!</span>
+        </div>
+      `;
+      document.body.appendChild(achievementEl);
+      
+      setTimeout(() => achievementEl.remove(), 4000);
+    }
+
+    function checkAchievements() {
+      const newAchievements = [];
+      
+      if (timeLeft > 30 && !playerStats.achievements.includes('speedster')) {
+        newAchievements.push('speedster');
+      }
+      
+      if (wrongMatches === 0 && !playerStats.achievements.includes('perfectionist')) {
+        newAchievements.push('perfectionist');
+      }
+      
+      if (combo >= 5 && !playerStats.achievements.includes('combo_king')) {
+        newAchievements.push('combo_king');
+      }
+      
+      // Add current theme to completed themes
+      if (!playerStats.themesCompleted.includes(currentTheme)) {
+        playerStats.themesCompleted.push(currentTheme);
+      }
+      
+      if (playerStats.themesCompleted.length >= 6 && !playerStats.achievements.includes('desi_master')) {
+        newAchievements.push('desi_master');
+      }
+      
+      newAchievements.forEach(achievementId => {
+        playerStats.achievements.push(achievementId);
+        showAchievement(achievements[achievementId]);
+        updateScore(achievements[achievementId].points);
+      });
+      
+      localStorage.setItem('memoryStats', JSON.stringify(playerStats));
+    }
+
+    function createCelebration() {
+      const celebration = document.createElement('div');
+      celebration.className = 'celebration';
+      celebration.innerHTML = '🎆🪔✨🎊🌺'.repeat(10);
+      document.body.appendChild(celebration);
+      
+      setTimeout(() => celebration.remove(), 3000);
+    }
+
+    function getDifficultySettings(difficulty) {
+      switch (difficulty) {
+        case 'easy': return { pairs: 6, columns: 4, time: 90 };
+        case 'hard': return { pairs: 10, columns: 5, time: 75 };
+        case 'medium':
+        default: return { pairs: 8, columns: 4, time: 60 };
+      }
+    }
+
+    function updateScore(points) {
+      score += points;
+      scoreEl.textContent = score;
+    }
+
+    function updateCombo(isMatch) {
+      if (isMatch) {
+        combo++;
+        if (combo > 1) {
+          updateScore(combo * 10); // Combo bonus
+        }
+      } else {
+        combo = 0;
+      }
+      comboEl.textContent = combo;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function createCard(emoji) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.dataset.emoji = emoji;
+      card.innerHTML = `<div class="emoji">${emoji}</div>`;
+      card.addEventListener('click', () => flipCard(card));
+      return card;
+    }
+
+    function flipCard(card) {
+      if (isPeeking || card.classList.contains('flipped') || card.classList.contains('matched') || flipped.length === 2) {
+        return;
+      }
+
+      // Add haptic feedback and sound
+      vibrate(50);
+      playSound('flip');
+
+      card.classList.add('flipped');
+      flipped.push(card);
+
+      if (flipped.length === 2) {
+        setTimeout(checkMatch, 700);
+      }
+    }
+
+    function checkMatch() {
+      const [c1, c2] = flipped;
+      if (c1.dataset.emoji === c2.dataset.emoji) {
+        // It's a match - enhanced feedback
+        vibrate([100, 50, 100]);
+        playSound('match');
+        
+        c1.classList.add('matched');
+        c2.classList.add('matched');
+        
+        if (c1.dataset.emoji === bonusTimeEmoji) {
+            timeLeft += 10;
+            timeEl.textContent = timeLeft;
+        }
+
+        matched++;
+        updateScore(50);
+        updateCombo(true);
+
+        if (matched === numPairs) {
+          winGame();
+        }
+      } else {
+        // Not a match - enhanced feedback
+        vibrate([200, 100, 200]);
+        playSound('wrong');
+        wrongMatches++;
+        
+        c1.classList.add('shake');
+        c2.classList.add('shake');
+        
+        if (currentDifficulty === 'hard') {
+            timeLeft = Math.max(0, timeLeft - 3);
+            timeEl.textContent = timeLeft;
+        }
+
+        setTimeout(() => {
+          c1.classList.remove('flipped', 'shake');
+          c2.classList.remove('flipped', 'shake');
+        }, 600);
+        updateCombo(false);
+      }
+      flipped = [];
+    }
+
+    function startGame() {
+      modalEl.style.display = 'none';
+      setupEl.style.display = 'none';
+      gameContainerEl.style.display = 'block';
+
+      currentDifficulty = document.getElementById('difficulty').value;
+      currentTheme = document.getElementById('theme').value;
+      const settings = getDifficultySettings(currentDifficulty);
+      numPairs = settings.pairs;
+      timeLeft = settings.time;
+
+      const themeName = document.querySelector(`#theme option[value='${currentTheme}']`).textContent;
+      h1El.textContent = `${themeName} Challenge`;
+
+      boardEl.innerHTML = '';
+      boardEl.style.gridTemplateColumns = `repeat(${settings.columns}, 70px)`;
+      flipped = [];
+      matched = 0;
+      score = 0;
+      combo = 0;
+      peekCount = 1;
+      wrongMatches = 0;
+
+      scoreEl.textContent = 0;
+      comboEl.textContent = 0;
+      peekBtn.disabled = false;
+      peekBtn.textContent = `🧐 Peek (${peekCount})`;
+      
+      const highScoreKey = `${currentTheme}-${currentDifficulty}`;
+      highScoreEl.textContent = highScores[highScoreKey] || 0;
+
+      clearInterval(timer);
+      timeEl.textContent = timeLeft;
+
+      let emojis = [...emojiDecks[currentTheme].slice(0, numPairs - 1)];
+      emojis.push(bonusTimeEmoji); // Add bonus time emoji
+      let emojiPairs = [...emojis, ...emojis];
+      shuffle(emojiPairs);
+
+      emojiPairs.forEach(emoji => {
+        let card = createCard(emoji);
+        boardEl.appendChild(card);
+      });
+
+      timer = setInterval(() => {
+        timeLeft--;
+        timeEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          gameOver();
+        }
+      }, 1000);
+    }
+
+    function handlePeek() {
+      if (peekCount <= 0 || isPeeking) return;
+      
+      isPeeking = true;
+      peekCount--;
+      peekBtn.textContent = `🧐 Peek (${peekCount})`;
+      peekBtn.disabled = true;
+
+      const allCards = boardEl.querySelectorAll('.card:not(.matched)');
+      allCards.forEach(card => card.classList.add('flipped'));
+
+      setTimeout(() => {
+        allCards.forEach(card => card.classList.remove('flipped'));
+        isPeeking = false;
+      }, 1500);
+    }
+
+    function showModal(title, text, finalScoreValue) {
+        clearInterval(timer);
+        modalTitleEl.textContent = title;
+        modalTextEl.textContent = text;
+        finalScoreEl.textContent = finalScoreValue;
+        modalEl.style.display = 'flex';
+    }
+
+    function winGame() {
+      clearInterval(timer);
+      const finalScoreValue = score + (timeLeft * 5); // Bonus for time left
+      updateScore(timeLeft * 5);
+      
+      // Celebration effects
+      vibrate([200, 100, 200, 100, 500]);
+      playSound('win');
+      createCelebration();
+      checkAchievements();
+      
+      showModal('🎉 शाबाश! You Won!', 'Waah! Kya memory hai aapki!', finalScoreValue);
+
+      const highScoreKey = `${currentTheme}-${currentDifficulty}`;
+      const currentHighScore = highScores[highScoreKey] || 0;
+      if (finalScoreValue > currentHighScore) {
+        highScores[highScoreKey] = finalScoreValue;
+        localStorage.setItem('memoryHighScores', JSON.stringify(highScores));
+        highScoreEl.textContent = finalScoreValue;
+        modalTextEl.textContent = 'नया रिकॉर्ड! New High Score! You are a true champion!';
+      }
+      
+      playerStats.gamesPlayed++;
+      localStorage.setItem('memoryStats', JSON.stringify(playerStats));
+    }
+
+    function gameOver() {
+        clearInterval(timer);
+        showModal('⏰ Time Up!', 'Better luck next time!', score);
+    }
+
+
+    function restartGame() {
+        clearInterval(timer);
+        gameContainerEl.style.display = 'none';
+        setupEl.style.display = 'block';
+    }
+
+    function playAgain() {
+        startGame();
+    }
+
+
+    startGameBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', restartGame);
+    peekBtn.addEventListener('click', handlePeek);
+    modalPlayAgainBtn.addEventListener('click', playAgain);
+
+</script>
+</body>
+</html>
