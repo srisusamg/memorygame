@@ -37,8 +37,8 @@
       margin: 1.5rem 0;
     }
     .card {
-      width: min(12vw, 80px);
-      height: min(12vw, 80px);
+      width: min(15vw, 95px);
+      height: min(15vw, 95px);
       background-color: #fff3e0;
       border: 2px solid #ffa726;
       border-radius: 10px;
@@ -46,7 +46,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: min(4vw, 2rem);
+      font-size: min(5vw, 2.2rem);
       transform-style: preserve-3d;
       transition: transform 0.4s, background-color 0.4s, box-shadow 0.2s;
       touch-action: manipulation;
@@ -169,31 +169,54 @@
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
       .board {
-        grid-gap: 8px;
-        padding: 0 10px;
+        grid-gap: 6px;
+        padding: 0 5px;
+        max-width: 100vw;
+        overflow-x: auto;
       }
       
       .card {
-        font-size: min(4vw, 2rem);
+        width: min(18vw, 75px);
+        height: min(18vw, 75px);
+        font-size: min(5.5vw, 1.8rem);
       }
       
       h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
       }
       
       .scoreboard {
-        font-size: 0.9rem;
-        padding: 0.3rem 0.8rem;
+        font-size: 0.85rem;
+        padding: 0.3rem 0.6rem;
+        margin-bottom: 0.8rem;
       }
       
       .controls {
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
+        margin-top: 1rem;
       }
       
       button {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.7rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .card {
+        width: min(20vw, 65px);
+        height: min(20vw, 65px);
+        font-size: min(6vw, 1.6rem);
+      }
+      
+      .board {
+        grid-gap: 4px;
+      }
+      
+      h1 {
+        font-size: 1.6rem;
       }
     }
     
@@ -321,7 +344,7 @@
       food: ['🍛', '🥘', '🍲', '🫓', '🍢', '🥟', '🍚', '🧁', '🥭', '🌶️', '🧄', '🥥', '🍯', '☕'],
       festivals: ['🪔', '🎆', '�️', '🎨', '🌺', '🥥', '🎪', '🪘', '🎭', '🕉️', '🎊', '✨', '🌙', '⭐'],
       bollywood: ['💃', '🕺', '🎬', '🎵', '👑', '💎', '🌟', '🎪', '🎭', '🎤', '🎸', '🥁', '🎺', '🎻'],
-      culture: ['🕌', '�', '�', '🦚', '�', '�🐄', '�', '🪘', '🎨', '�', '�', '🕯️', '🎪', '�'],
+      culture: ['🕌', '🪔', '🕉️', '🦚', '🎉', '🐄', '🪘', '🎨', '🎊', '🕯️', '🎪', '🪕', '🧘', '🙏'],
       transport: ['🛺', '🚂', '✈️', '🚗', '🛵', '🚲', '⛵', '�', '🏨', '�️', '🚁', '🚢', '🏍️', '🚕'],
       animals: ['🐘', '🐅', '🐒', '🦚', '🐄', '🐍', '🐫', '🐃', '🐆', '🐊', '🦌', '🐕', '🐈', '🕊️']
     };
@@ -585,7 +608,7 @@
       h1El.textContent = `${themeName} Challenge`;
 
       boardEl.innerHTML = '';
-      boardEl.style.gridTemplateColumns = `repeat(${settings.columns}, 70px)`;
+      boardEl.style.gridTemplateColumns = `repeat(${settings.columns}, min(15vw, 95px))`;
       flipped = [];
       matched = 0;
       score = 0;
